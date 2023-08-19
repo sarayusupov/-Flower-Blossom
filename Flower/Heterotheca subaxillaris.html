@@ -1,0 +1,62 @@
+<DOCTYPE html>
+<html lang="he">
+<meta charset='utf-8'> 
+<html>
+    <head>
+<title> Blossom </title>
+        <link rel="stylesheet" href="Style.css"  />  
+    </head>
+    <body>
+    <h1><big>Heterotheca subaxillaris
+ </big></h1>
+<hr/>
+<br>
+<img src = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Heterotheca_subaxillaris_01.jpg/800px-Heterotheca_subaxillaris_01.jpg" alt = " "חרדלטיונית החולות
+ class="center" style="width:400" height:"500">
+<br> <br>
+<br>
+<p><big>  Scientific name:  Heterotheca subaxillaris </big>	
+<br>
+<big>Growth area: Dead sea, Jordan Valley, Samaria, North</big>  
+<br>
+<big>Kingdom: Plantae</big>  
+<br>
+<big>Family:	Asteraceae</big>  
+<br>          
+   <br> <br><br>  
+ </p>           
+<div class = "Name">
+Name:
+<input type="username" Name="" class="name2" placeholder="name">
+</div>
+<br>
+<textarea id="title" type="text "rows="5" cols="40" onkeyup="Allow()" placeholder="leave a comment "></textarea>
+<br><br>
+<input type="submit" value="add comment" onclick="insert()" style="width:100px;" /></form>"display"></div>
+<script type="text/javascript">
+var titles = [];
+var titleInput = document.getElementById("title");
+var messageBox = document.getElementById("display");
+function Allow()
+{
+if (!user.title.value.match(/[א-תa-zA-Z]$/) && user.title.value !="")
+{
+user.title.value="";
+alert("Please Enter only letters");
+}
+window.location.reload()
+}
+function insert () {
+titles.push(titleInput.value);
+clearAndShow();
+}
+function clearAndShow ()
+{
+titleInput.value = "";
+messageBox.innerHTML = "";
+messageBox.innerHTML += " " + titles.join("<br/> ") + "<br/>";
+}
+    </script>
+ </p> 
+</body>
+</html>

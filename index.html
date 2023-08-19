@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css" />
+        <link rel="stylesheet" type="text/css" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/MarkerCluster.css" />
+        <link rel="stylesheet" href="css/MarkerCluster.Default.css" />
+
+        <link href='https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' rel='stylesheet'>
+		<link href='https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css' rel='stylesheet'>
+		<link href='https://fonts.googleapis.com/css?family=Titillium+Web:300' rel='stylesheet'>
+        <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+        <script type='text/javascript' src='https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js'></script>
+
+
+
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+
+        body {
+    height: 100%;
+}
+
+body {
+    font-family: 'Muli', sans-serif;
+}
+
+.container-fluid {
+    height: 100%;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.row {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+.row-first {
+    height:80%;
+    overflow: hidden;
+}
+
+footer {
+    position: fixed;
+    height: 90%;
+    bottom: 0;
+    width: 100%;
+}
+
+
+        </style>
+        <title></title>
+    </head>
+    <body>
+
+    	<nav class=" navbar  navbar-fixed-top navbar-expand-sm navbar-light bg-light ">
+
+  <a class="navbar-brand" href="#">Flowers in Israel</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          By Date
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" onclick="show_dates(1)" href="#">January</a>
+          <a class="dropdown-item"  onclick="show_dates(2)" href="#">February</a>
+          <a class="dropdown-item"  onclick="show_dates(3)" href="#">March</a>
+          <a class="dropdown-item"  onclick="show_dates(4)" href="#">April</a>
+          <a class="dropdown-item"  onclick="show_dates(5)" href="#">May</a>
+          <a class="dropdown-item"  onclick="show_dates(6)" href="#">June</a>
+          <a class="dropdown-item"  onclick="show_dates(7)" href="#">July</a>
+          <a class="dropdown-item"  onclick="show_dates(8)" href="#">August</a>
+          <a class="dropdown-item"  onclick="show_dates(9)" href="#">September</a>
+          <a class="dropdown-item"  onclick="show_dates(10)" href="#">October</a>
+          <a class="dropdown-item"  onclick="show_dates(11)" href="#">November</a>
+          <a class="dropdown-item"  onclick="show_dates(12)" href="#">December</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          By Location
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" onclick="show_north()" href="#">North</a>
+          <a class="dropdown-item"  onclick="show_south()" href="#">South</a>
+          <a class="dropdown-item"  onclick="show_jud()" href="#">Judea Samaria</a>
+          <a class="dropdown-item"  onclick="show_center()" href="#">Center</a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" onclick="reset_map()" href="#">Reset Map</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+
+    <footer >
+        <div id="map">
+        </div>
+
+    </footer>
+
+
+
+
+
+        <script src="js/leaflet.js"></script>
+        <script src="js/leaflet-heat.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/OSMBuildings-Leaflet.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/leaflet.markercluster.js"></script>
+        <script src="data/generalarea0.js"></script>
+        <script src="data/Spesific1.js"></script>
+        <script src="data/Flowers2.js"></script>
+        <script>
+
+
+        L.ImageOverlay.include({
+            getBounds: function () {
+                return this._bounds;
+            }
+        });
+        var markers = [];
+        var locations = {};
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[29.789012758,32.6837711001],[32.3185516368,37.4727153667]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.addAttribution('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a>');
+        var feature_group = new L.featureGroup([]);
+        var bounds_group = new L.featureGroup([]);
+        var raster_group = new L.LayerGroup([]);
+        var basemap0 = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors,<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+            maxZoom: 28
+        });
+        basemap0.addTo(map);
+        function setBounds() {
+        }
+        function geoJson2heat(geojson, weight) {
+          return geojson.features.map(function(feature) {
+            return [
+              feature.geometry.coordinates[1],
+              feature.geometry.coordinates[0],
+              feature.properties[weight]
+            ];
+          });
+        }
+        function pop_generalarea0(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? Autolinker.link(String(feature.properties['id'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">area</th>\
+                        <td>' + (feature.properties['area'] !== null ? Autolinker.link(String(feature.properties['area'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['code'] !== null ? Autolinker.link(String(feature.properties['code'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_generalarea0() {
+            return {
+                pane: 'pane_generalarea0',
+                opacity: 1,
+                color: 'rgba(0,0,0,0.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0,
+                fillOpacity: 1,
+                fillColor: 'rgba(93,93,140,0.0)',
+            }
+        }
+        map.createPane('pane_generalarea0');
+        map.getPane('pane_generalarea0').style.zIndex = 600;
+        map.getPane('pane_generalarea0').style['mix-blend-mode'] = 'normal';
+    var layer_generalarea0 = new L.geoJson(json_generalarea0, {
+        pane: 'pane_generalarea0',
+        onEachFeature: pop_generalarea0,
+        style: style_generalarea0
+    });
+        bounds_group.addLayer(layer_generalarea0);
+        feature_group.addLayer(layer_generalarea0);
+        function pop_Spesific1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? Autolinker.link(String(feature.properties['id'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? Autolinker.link(String(feature.properties['Name'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_Spesific1() {
+            return {
+                pane: 'pane_Spesific1',
+                opacity: 1,
+                color: 'rgba(0,0,0,0.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0,
+                fillOpacity: 1,
+                fillColor: 'rgba(82,250,147,0.0)',
+            }
+        }
+        map.createPane('pane_Spesific1');
+        map.getPane('pane_Spesific1').style.zIndex = 601;
+        map.getPane('pane_Spesific1').style['mix-blend-mode'] = 'normal';
+    var layer_Spesific1 = new L.geoJson(json_Spesific1, {
+        pane: 'pane_Spesific1',
+        onEachFeature: pop_Spesific1,
+        style: style_Spesific1
+    });
+        bounds_group.addLayer(layer_Spesific1);
+        feature_group.addLayer(layer_Spesific1);
+        function pop_Flowers2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? Autolinker.link(String(feature.properties['id'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td>' + (feature.properties['Name'] !== null ? Autolinker.link(String(feature.properties['Name'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">x_coord</th>\
+                        <td>' + (feature.properties['x_coord'] !== null ? Autolinker.link(String(feature.properties['x_coord'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">y_coord</th>\
+                        <td>' + (feature.properties['y_coord'] !== null ? Autolinker.link(String(feature.properties['y_coord'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">start_date</th>\
+                        <td>' + (feature.date['start_date'] !== null ? Autolinker.link(String(feature.date['start_date'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">end_date</th>\
+                        <td>' + (feature.date['end_date'] !== null ? Autolinker.link(String(feature.date['end_date'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['x'] !== null ? Autolinker.link(String(feature.properties['x'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_Flowers2() {
+            return {
+                pane: 'pane_Flowers2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fillOpacity: 1,
+                fillColor: 'rgba(133,29,6,1.0)',
+                icon: L.icon({
+                    iconUrl: 'markers/3025097.svg',
+                    iconSize: [14, 14]
+                }),
+
+            }
+        }
+        map.createPane('pane_Flowers2');
+        map.getPane('pane_Flowers2').style.zIndex = 602;
+        map.getPane('pane_Flowers2').style['mix-blend-mode'] = 'normal';
+        var layer_Flowers2 = new L.geoJson(json_Flowers2, {
+            pane: 'pane_Flowers2',
+            onEachFeature: pop_Flowers2,
+            pointToLayer: function (feature, latlng) {
+                var circ = L.marker(latlng, style_Flowers2(feature))
+                markers.push({"point": circ, "start_date": feature["date"]["start_date"], "end_date": feature["date"]["end_date"]});
+                return circ;
+            }
+        });
+        bounds_group.addLayer(layer_Flowers2);
+        feature_group.addLayer(layer_Flowers2);
+        raster_group.addTo(map);
+        feature_group.addTo(map);
+        setBounds();
+        </script>
+
+    <script>
+        var g_month_chosen = -1;
+        var months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+        function get_months_period(start, end){
+            ret_months = [];
+            ret_months.push(start);
+            for (let i = 0; i < months.length; i++) {
+                current = months[(start + i) % months.length];
+                if (end === current){
+                    break;
+                }
+                ret_months.push(current);
+            }
+            ret_months.push(end);
+            return ret_months;
+        }
+
+        layer_generalarea0.eachLayer(function (layer) {
+            if (layer.feature.properties.id === 'p_north'){
+                locations["north"] = layer;
+            }
+            else if (layer.feature.properties.id === 'p_south'){
+                locations["south"] = layer;
+            }
+            else if (layer.feature.properties.id === 'p_jud'){
+                locations["jud"] = layer;
+            }
+            else if (layer.feature.properties.id === 'p_center'){
+                locations["center"] = layer;
+            }
+        });
+
+        locations_points = {}
+        locations_points["north"] = []
+        locations_points["south"] = []
+        locations_points["jud"] = []
+        locations_points["center"] = []
+
+        $.each(markers, function(index, marker) {
+            point_x = marker.point.feature.properties.x
+            point_y = marker.point.feature.properties.y
+            $.each(locations, function(location_name, location) {
+                bounds = location.getBounds();
+                top_x = bounds._northEast.lng
+                bottom_x = bounds._southWest.lng
+                top_y = bounds._northEast.lat
+                bottom_y = bounds._southWest.lat
+                if (point_x >= bottom_x && point_x <= top_x){
+                    if(point_y >= bottom_y && point_y <= top_y){
+                        locations_points[location_name].push(marker)
+                    }
+                }
+            });
+        });
+
+
+        function reset_map(){
+            remove_all_markers();
+            show_all_markers();
+            g_month_chosen = -1;
+        }
+
+        function show_north(){
+            remove_all_markers();
+            if (g_month_chosen > 0){ //if filter by date also chosen
+                $.each(locations_points["north"], function(index, value) {
+                    start_date = parseInt(value.start_date);
+                    end_date = parseInt(value.end_date);
+                    months_period = get_months_period(start_date, end_date);
+                    if (months_period.includes(g_month_chosen)){
+                        map.addLayer(value.point);
+                    }
+                });
+            }
+            else{
+                $.each(locations_points["north"], function(index, value) {
+                    map.addLayer(value.point);
+                });
+            }
+        }
+
+
+        function show_south(){
+            remove_all_markers();
+            if (g_month_chosen > 0){ //if filter by date also chosen
+                $.each(locations_points["south"], function(index, value) {
+                    start_date = parseInt(value.start_date);
+                    end_date = parseInt(value.end_date);
+                    months_period = get_months_period(start_date, end_date);
+                    if (months_period.includes(g_month_chosen)){
+                        map.addLayer(value.point);
+                    }
+                });
+            }
+            else{
+                $.each(locations_points["south"], function(index, value) {
+                    map.addLayer(value.point);
+                });
+            }
+        }
+
+
+        function show_center(){
+            remove_all_markers();
+            if (g_month_chosen > 0){ //if filter by date also chosen
+                $.each(locations_points["center"], function(index, value) {
+                    start_date = parseInt(value.start_date);
+                    end_date = parseInt(value.end_date);
+                    months_period = get_months_period(start_date, end_date);
+                    if (months_period.includes(g_month_chosen)){
+                        map.addLayer(value.point);
+                    }
+                });
+            }
+            else{
+                $.each(locations_points["center"], function(index, value) {
+                    map.addLayer(value.point);
+                });
+            }
+        }
+
+
+        function show_jud(){
+            remove_all_markers();
+            if (g_month_chosen > 0){ //if filter by date also chosen
+                $.each(locations_points["jud"], function(index, value) {
+                    start_date = parseInt(value.start_date);
+                    end_date = parseInt(value.end_date);
+                    months_period = get_months_period(start_date, end_date);
+                    if (months_period.includes(g_month_chosen)){
+                        map.addLayer(value.point);
+                    }
+                });
+            }
+            else{
+                $.each(locations_points["jud"], function(index, value) {
+                    map.addLayer(value.point);
+                });
+            }
+        }
+
+
+        function show_dates(month){
+            g_month_chosen = month; //setting global month var for filtering by location
+            remove_all_markers();
+            $.each(markers, function(index, value) {
+                start_date = parseInt(value.start_date);
+                end_date = parseInt(value.end_date);
+                months_period = get_months_period(start_date, end_date);
+                if (months_period.includes(g_month_chosen)){
+                    map.addLayer(value.point);
+                }
+            });
+        }
+
+        function remove_all_markers(){
+            $.each(markers, function(index, value) {
+                map.removeLayer(value.point);
+            });
+        }
+
+        function show_all_markers(){
+            $.each(markers, function(index, value) {
+                map.addLayer(value.point);
+            });
+        }
+
+
+
+    </script>
+    </body>
+</html>
